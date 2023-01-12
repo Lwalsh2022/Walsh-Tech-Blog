@@ -21,3 +21,23 @@ const updateBlogPost = async (event) => {
             const userData = await response.json();
             // What we really need is the userData.id to later use in PUT request
             const user_id = userData.id;
+
+    // make PUT request to update blog post 
+    const putResponse = await fetch(`/api/blogpost/${user_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ id, title, content, user_id }),
+        headers: {'Content-Type': 'application/json'},
+    });
+
+    if (putResponse.ok) {
+        //if successful, redirect browser to homepage
+        document.location.replace(`/post/${user_id}`);
+    }
+}
+
+} else { alert('Must enter all values plus valid username'); }
+
+};
+
+// add event listener to submit button
+document.querySelector('#editPostBtn').addEventListener('click', updateBlogPost);         
