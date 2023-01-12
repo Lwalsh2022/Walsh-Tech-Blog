@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { Comment } = require('../../models');
 
-// this is at the /api endpoint
+
 
 
 // POST - create a new comment
