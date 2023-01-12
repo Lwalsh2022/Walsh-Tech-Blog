@@ -1,13 +1,51 @@
-const router = require('express').Router();
 
-const apiRoutes = require('./api');
-//building an object in homeRoutes that contains a bunch of routes. Import this router object to be used by express
-//all these routes are like a table of content for all available routes
-const homeRoutes = require('./homeRoutes');
-
-
-router.use('/', homeRoutes);
-router.use('/api', apiRoutes);
+const path = require('path');
+const express = require('express');
+const session = require('express-session');
+const exphbs = require('express-handlebars');
+const routes = require('./controllers');
 
 
-module.exports = router;
+const sequelize = require('./config/connection');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+
+const app = express();
+const PORT = process.env.PORT || 9999;
+
+// Set up Handlebars.js engine
+const hbs = exphbs.create({});
+
+// Create session
+const sess = {
+  secret: 'secret session',
+  cookie: {},
+  resave: false,
+  saveUninitialized: true,
+  store: new SequelizeStore({
+    db: sequelize
+  })
+};
+
+app.use(session(sess));
+
+
+// Inform Express.js on which template engine to use
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
+// Sets up express app to handle data parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(routes);
+
+
+// Logging DB info
+console.log(`Database name: ${sequelize.config.database} \n running on port: ${sequelize.config.port} \n under hostname: ${sequelize.config.host}`);
+
+
+// Listener. Ths effectively 'starts' our server
+sequelize.sync({ force: false }).then(() => {
+    app.listen(PORT, () => console.log(`Now listening on port: ${PORT}`));
+  });
